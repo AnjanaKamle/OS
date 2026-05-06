@@ -1,44 +1,57 @@
 [org 0x7c00]
+; Jumping to the start
+jmp start
 ;Setting kernel Now at address 1000
 KERNEL_START equ 0x1000
 
 ;Booting From The Disk
 BOOT_DISK: DB 0
 
+start:
 
-mov [BOOT_DISK], dl
-xor ax, ax
-mov es, ax
-mov ds, ax
-mov bp, 0x8000
-mov sp, bp
+    mov [BOOT_DISK], dl
+    xor ax, ax
+    mov es, ax
+    mov ds, ax
+    mov bp, 0x8000
+    mov sp, bp
 
-mov bx, KERNEL_START
-mov dh, 20
+    mov bx, KERNEL_START
+    mov dh, 20
 
-mov ah, 0x02
-mov al, dh
-mov ch, 0
-mov dh, 0
-mov cl, 2
-mov dl, [BOOT_DISK]
-int 0x13
+    mov ah, 0x02
+    mov al, dh
+    mov ch, 0
+    mov dh, 0
+    mov cl, 2
+    mov dl, [BOOT_DISK]
+    int 0x13
+    jc Disk_error
 
-mov ah, 0x0
-mov al, 0x3
-int 0x10
+    mov ah, 0x0
+    mov al, 0x3
+    int 0x10
+    jmp No_Error
 
-CODE_SEG equ code_descriptor - GDT_Start
-DATA_SEG equ data_descriptor - GDT_Start
+Disk_error:
+    mov ah, 0x0e
+    mov al, 'E'
+    int 0x10
+    jmp $
 
-cli
+No_Error:
 
-lgdt [GDT_descriptor]
-mov eax, cr0        ; last bit of cr0 = 1
-or eax, 1
-mov cr0, eax
-jmp CODE_SEG:start_PM
-jmp $
+    CODE_SEG equ code_descriptor - GDT_Start
+    DATA_SEG equ data_descriptor - GDT_Start
+
+    cli
+
+    lgdt [GDT_descriptor]
+    mov eax, cr0        ; last bit of cr0 = 1
+    or eax, 1
+    mov cr0, eax
+    jmp CODE_SEG:start_PM
+    jmp $
 
 GDT_Start:
     null_descriptor:
