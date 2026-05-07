@@ -1,9 +1,9 @@
 
 /** ** MODIFIED: Cleaned up includes - removed duplicates and old vgaColors.h reference ** **/
-#include "Headers/ports.h"
-#include "Headers/vga.h"
-#include "Headers/keyboard.h"
-#include "Headers/shell.h"
+#include "../Headers/ports.h"
+#include "../Headers/vga.h"
+#include "../Headers/keyboard.h"
+#include "../Headers/shell.h"
 
 static unsigned int cursor = 0;
 static unsigned short *vidmem = (unsigned short*) 0xb8000;
