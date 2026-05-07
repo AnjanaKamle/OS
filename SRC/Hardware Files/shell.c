@@ -22,29 +22,17 @@ typedef struct {
   char current_dir[MAX_PATH_LEN];
 } Filesystem;
 
-static unsigned short *vidmem = (unsigned short *)0xb8000;
-static unsigned int cursor = 0;
 static Filesystem fs;
-
-void shell_putchar(char c, unsigned int color) {
-  if (c == '\n') {
-    cursor = ((cursor / 80) + 1) * 80;
-    return;
-  }
-  if (cursor < 80 * 25) {
-    vidmem[cursor++] = (unsigned char)c | color;
-  }
-}
+static unsigned int cursor = 0;
+static unsigned short *vidmem = (unsigned short*) 0xb8000;
 
 void shell_print(const char *str, unsigned int color) {
-  for (const char *ch = str; *ch; ch++) {
-    shell_putchar(*ch, color);
-  }
+    printClr((unsigned char *)str, color);
 }
 
 void shell_println(const char *str, unsigned int color) {
-  shell_print(str, color);
-  shell_putchar('\n', color);
+  printClr((unsigned char *)str, color);
+  printClr("\n", color);
 }
 
 void shell_clear_screen(void) {
@@ -52,72 +40,42 @@ void shell_clear_screen(void) {
     vidmem[i] = ' ' | COLOR_WHITE;
   }
   cursor = 0;
+  putChar('^', COLOR_LIGHT_GREEN);
 }
 
 /** ** MODIFIED: Expanded keyboard scancode mapping to support more keys ** **/
 void shell_read_line(char *buffer, int max_len) {
   int len = 0;
-  shell_putchar('>', COLOR_LIGHT_GREEN);
-  shell_putchar(' ', COLOR_LIGHT_GREEN);
+  putChar('>', COLOR_LIGHT_GREEN);
+  putChar(' ', COLOR_LIGHT_GREEN);
 
   while (len < max_len - 1) {
-    while (!data_avail())
-      ;
-    unsigned char scancode = Scancode_Keyboard();
+    while (!data_avail());
+    unsigned char ascii = ScancodeToASCII(Scancode_Keyboard());
 
-    if (scancode == 0x1C) { // Enter key
+    if (ascii == 0)
+      continue;
+
+    if (ascii == 13) {           // Enter
       buffer[len] = '\0';
-      shell_putchar('\n', COLOR_LIGHT_GREEN);
+      putChar(13, COLOR_LIGHT_GREEN);
       break;
-    } else if (scancode == 0x0E) { // Backspace
+    }
+
+    if (ascii == 8) {            // Backspace
       if (len > 0) {
         len--;
-        shell_putchar('\b', COLOR_LIGHT_GREEN);
-        shell_putchar(' ', COLOR_LIGHT_GREEN);
-        shell_putchar('\b', COLOR_LIGHT_GREEN);
+        putChar(8, COLOR_LIGHT_GREEN);
       }
-    } else if (scancode == 0x39) { // Space
-      buffer[len++] = ' ';
-      shell_putchar(' ', COLOR_LIGHT_GREEN);
+      continue;
     }
-    // Numbers 1-9, 0
-    else if (scancode >= 0x02 && scancode <= 0x0D) {
-      char nums[] = "1234567890";
-      buffer[len++] = nums[scancode - 0x02];
-      shell_putchar(nums[scancode - 0x02], COLOR_LIGHT_GREEN);
-    }
-    // Letters Q-P (QWERTY)
-    else if (scancode >= 0x10 && scancode <= 0x19) {
-      char keys[] = "qwertyuiop";
-      buffer[len++] = keys[scancode - 0x10];
-      shell_putchar(keys[scancode - 0x10], COLOR_LIGHT_GREEN);
-    }
-    // Letters A-L (ASDF row)
-    else if (scancode >= 0x1E && scancode <= 0x28) {
-      char keys[] = "asdfghjkl";
-      buffer[len++] = keys[scancode - 0x1E];
-      shell_putchar(keys[scancode - 0x1E], COLOR_LIGHT_GREEN);
-    }
-    // Letters Z-M (ZXCV row)
-    else if (scancode >= 0x2C && scancode <= 0x32) {
-      char keys[] = "zxcvbnm";
-      buffer[len++] = keys[scancode - 0x2C];
-      shell_putchar(keys[scancode - 0x2C], COLOR_LIGHT_GREEN);
-    }
-    // Special characters
-    else if (scancode == 0x34) { // Period/dot
-      buffer[len++] = '.';
-      shell_putchar('.', COLOR_LIGHT_GREEN);
-    } else if (scancode == 0x35) { // Forward slash
-      buffer[len++] = '/';
-      shell_putchar('/', COLOR_LIGHT_GREEN);
-    } else if (scancode == 0x0C) { // Minus/hyphen
-      buffer[len++] = '-';
-      shell_putchar('-', COLOR_LIGHT_GREEN);
-    } else if (scancode == 0x33) { // Comma
-      buffer[len++] = ',';
-      shell_putchar(',', COLOR_LIGHT_GREEN);
-    }
+
+    if (ascii == 27)             // ESC - ignore
+      continue;
+
+    // All printable characters (letters, digits, space, symbols)
+    buffer[len++] = ascii;
+    putChar(ascii, COLOR_LIGHT_GREEN);
   }
 }
 
@@ -136,9 +94,9 @@ void cmd_ls(void) {
     if (fs.files[i].is_dir) {
       shell_print("/", COLOR_LIGHT_CYAN);
     }
-    shell_putchar(' ', COLOR_LIGHT_CYAN);
+    putChar(' ', COLOR_LIGHT_CYAN);
   }
-  shell_putchar('\n', COLOR_LIGHT_CYAN);
+  putChar('\n', COLOR_LIGHT_CYAN);
 }
 
 void cmd_ls_l(void) {
@@ -154,7 +112,7 @@ void cmd_ls_l(void) {
     }
     shell_print(" ", COLOR_LIGHT_CYAN);
     shell_print(fs.files[i].name, COLOR_LIGHT_CYAN);
-    shell_putchar('\n', COLOR_LIGHT_CYAN);
+    putChar('\n', COLOR_LIGHT_CYAN);
   }
 }
 
@@ -267,7 +225,7 @@ void shell_init(void) {
   shell_clear_screen();
   shell_println("=== Basic OS Shell ===", COLOR_LIGHT_GREEN);
   shell_println("Type 'help' for commands", COLOR_LIGHT_GREEN);
-  shell_putchar('\n', COLOR_BLACK);
+  putChar('\n', COLOR_BLACK);
 }
 
 void shell_run(void) {
@@ -277,6 +235,6 @@ void shell_run(void) {
     if (cmd_buffer[0] != '\0') {
       shell_parse_command(cmd_buffer);
     }
-    shell_putchar('\n', COLOR_BLACK);
+    putChar(13, COLOR_BLACK);
   }
 }
