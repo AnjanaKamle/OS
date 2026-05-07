@@ -3,4 +3,5 @@
 unsigned int data_avail(void);
 unsigned int Scancode_Keyboard(void);
 char character_input(void);
+unsigned char ScancodeToASCII(unsigned char scancode);
 #endif
