@@ -1,7 +1,9 @@
 
+/** ** MODIFIED: Cleaned up includes - removed duplicates and old vgaColors.h reference ** **/
 #include "Headers/ports.h"
 #include "Headers/vga.h"
 #include "Headers/keyboard.h"
+#include "Headers/shell.h"
 
 
 static unsigned short *vidmem = (unsigned short*) 0xb8000;
@@ -50,25 +52,8 @@ void putChar(unsigned char c, unsigned int color) {
 
 
 extern void kernel_main(){
-    unsigned char *str = "OS Project Made By Vinu And Anjana\n";
-    printClr(str, COLOR_LIGHT_CYAN);
-    printClr((unsigned char*)"\nShell Starts Here:\n", COLOR_RED);
-    
-    while (1) {
-        // Wait for keyboard data
-        while (!data_avail()) {
-            // Busy wait
-        }
-        
-        // Read scancode
-        unsigned char scancode = Scancode_Keyboard();
-        
-        // Convert scancode to ASCII
-        unsigned char ascii = ScancodeToASCII(scancode);
-        if (ascii) {
-            log[string_index] = ascii;
-            string_index++;
-            putChar(ascii, COLOR_WHITE);
-        }
-    }
+    /** ** MODIFIED: Replaced keyboard loop with shell initialization ** **/
+    shell_init();
+    shell_run();
+    return;
 }
