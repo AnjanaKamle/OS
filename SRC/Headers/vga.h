@@ -1,5 +1,7 @@
-#ifndef COLORS_H
-#define COLORS_H
+#ifndef VGA_H
+#define VGA_H
+#define Height 25
+#define Width 80
 #define COLOR_BLACK 0x0000
 #define COLOR_BLUE 0x0100
 #define COLOR_GREEN 0x0200

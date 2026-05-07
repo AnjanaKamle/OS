@@ -6,21 +6,25 @@
 
 static unsigned short *vidmem = (unsigned short*) 0xb8000;
 static unsigned int cursor = 0;
-typedef char string[256];
+typedef unsigned char string[256];
 unsigned int string_index = 0;
+string log;
 
 void printClr(unsigned char *string, unsigned int color){
 	for (unsigned char *ch = string; *ch; ch++){
         switch (*ch) {
             case '\n':
-                cursor = ((cursor / 80)+1)*80;
+                cursor = ((cursor / Width)+1)*Width;
                 continue;
             default:
-                if (cursor >= 80 * 24) {
-                    for (int i = 0; i < 80 * 24; i++) {
-                        vidmem[i] = vidmem[i + 80];
+                if (cursor >= Width * Height) {
+                    for (int i = 0; i < Width * Height; i++) {
+                        vidmem[i] = vidmem[i + Width];
                     }
-                    cursor = 80 * 22;
+                    for (int i = Width * (Height - 1); i < Width * Height; i++) {
+                        vidmem[i] = ' ' | COLOR_BLACK;
+                    }
+                    cursor = Width * (Height - 1);
                 }
                 vidmem[cursor++] = (unsigned char) *ch | color;
         }
@@ -29,14 +33,17 @@ void printClr(unsigned char *string, unsigned int color){
 
 void putChar(unsigned char c, unsigned int color) {
     if (c == 13) {
-        cursor = ((cursor / 80) + 1) * 80;
+        cursor = ((cursor / Width) + 1) * Width;
         return;
     }
-    if (cursor >= 80 * 24) {
-        for (int i = 0; i < 80 * 24; i++) {
-            vidmem[i] = vidmem[i + 80];
+    if (cursor >= Width * Height) {
+        for (int i = 0; i < Width * Height; i++) {
+            vidmem[i] = vidmem[i + Width];
         }
-        cursor = 80 * 22;
+        for (int i = Width * (Height - 1); i < Width * Height; i++) {
+            vidmem[i] = ' ' | COLOR_BLACK;
+        }
+        cursor = Width * (Height - 1);
     }
     vidmem[cursor++] = c | color;
 }
@@ -45,7 +52,7 @@ void putChar(unsigned char c, unsigned int color) {
 extern void kernel_main(){
     unsigned char *str = "OS Project Made By Vinu And Anjana\n";
     printClr(str, COLOR_LIGHT_CYAN);
-    printClr((unsigned char*)"\nPress Keys:\n", COLOR_RED);
+    printClr((unsigned char*)"\nShell Starts Here:\n", COLOR_RED);
     
     while (1) {
         // Wait for keyboard data
@@ -59,6 +66,8 @@ extern void kernel_main(){
         // Convert scancode to ASCII
         unsigned char ascii = ScancodeToASCII(scancode);
         if (ascii) {
+            log[string_index] = ascii;
+            string_index++;
             putChar(ascii, COLOR_WHITE);
         }
     }
