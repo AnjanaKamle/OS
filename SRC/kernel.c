@@ -8,7 +8,7 @@ static unsigned short *vidmem = (unsigned short*) 0xb8000;
 static unsigned int cursor = 0;
 typedef unsigned char string[256];
 unsigned int string_index = 0;
-string log;
+string logs;
 
 void printClr(unsigned char *string, unsigned int color){
 	for (unsigned char *ch = string; *ch; ch++){
@@ -36,6 +36,12 @@ void putChar(unsigned char c, unsigned int color) {
         cursor = ((cursor / Width) + 1) * Width;
         return;
     }
+    if (c == 8) {
+        string_index--;
+        cursor--;
+        vidmem[cursor] = ' ' | COLOR_BLACK;
+        return;
+    } 
     if (cursor >= Width * Height) {
         for (int i = 0; i < Width * Height; i++) {
             vidmem[i] = vidmem[i + Width];
@@ -66,7 +72,7 @@ extern void kernel_main(){
         // Convert scancode to ASCII
         unsigned char ascii = ScancodeToASCII(scancode);
         if (ascii) {
-            log[string_index] = ascii;
+            logs[string_index] = ascii;
             string_index++;
             putChar(ascii, COLOR_WHITE);
         }
