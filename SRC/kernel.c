@@ -1,10 +1,8 @@
 
+/** ** MODIFIED: Cleaned up includes - removed duplicates and old vgaColors.h reference ** **/
 #include "Headers/ports.h"
 #include "Headers/vga.h"
 #include "Headers/keyboard.h"
-#include "Headers/ports.h"
-#include "Headers/vgaColors.h"
-/** ** ADDED: Shell header to integrate shell with teammate's kernel changes ** **/
 #include "Headers/shell.h"
 
 
