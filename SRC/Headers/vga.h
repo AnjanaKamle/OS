@@ -18,4 +18,5 @@
 #define COLOR_LIGHT_MAGENTA 0x0D00
 #define COLOR_YELLOW 0x0E00
 #define COLOR_WHITE 0x0F00
+
 #endif

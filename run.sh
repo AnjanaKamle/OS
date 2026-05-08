@@ -1,8 +1,8 @@
-x86_64-elf-gcc -ffreestanding -m32 -g -c SRC/kernel.c -o Build/kernel.o
+x86_64-elf-gcc -ffreestanding -m32 -g -c SRC/system-programs/kernel.c -o Build/kernel.o
 x86_64-elf-gcc -ffreestanding -m32 -g -c SRC/Hardware\ Files/ports.c -o Build/ports.o
 x86_64-elf-gcc -ffreestanding -m32 -g -c SRC/Hardware\ Files/keyboard.c -o Build/keyboard.o
 # ** MODIFIED: Added shell.c compilation **
-x86_64-elf-gcc -ffreestanding -m32 -g -c SRC/Hardware\ Files/shell.c -o Build/shell.o
+x86_64-elf-gcc -ffreestanding -m32 -g -c SRC/system-programs/shell.c -o Build/shell.o
 nasm SRC/Boot-Level\ Files/kernel_entry.asm -f elf -o Build/kernel_entry.o
 # ** MODIFIED: Added Build/shell.o to linker **
 x86_64-elf-ld -m elf_i386 -o Build/binaries/kernel.bin -Ttext 0x1000 Build/kernel_entry.o Build/kernel.o Build/ports.o Build/keyboard.o Build/shell.o --oformat binary
